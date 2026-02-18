@@ -1,0 +1,27 @@
+{
+  "cli": {
+    "version": ">= 5.9.3",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "node": "20.10.0",
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "node": "20.10.0",
+      "distribution": "internal"
+    },
+    "production": {
+      "node": "20.10.0",
+      "env": {
+        "NODE_OPTIONS": "--max-old-space-size=4096",
+        "CI": "false"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

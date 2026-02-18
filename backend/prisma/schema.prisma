@@ -1,0 +1,113 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  EMPLOYEE
+  USER
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String?
+  role      Role     @default(USER)
+  events    Event[]
+  assignedEvents Event[] @relation("AssignedEmployees")
+  supportTickets SupportTicket[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum TicketType {
+  REQUEST
+  TICKET
+  COMPLAINT
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+model SupportTicket {
+  id          String       @id @default(uuid())
+  title       String
+  description String
+  type        TicketType   @default(TICKET)
+  status      TicketStatus @default(OPEN)
+  priority    String       @default("medium") // low, medium, high
+  userId      String
+  user        User         @relation(fields: [userId], references: [id])
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Event {
+  id              String   @id @default(uuid())
+  title           String
+  eventType       String
+  hostName        String
+  honoreeName     String?
+  date            String
+  time            String
+  location        String
+  message         String?
+  guestCount      Int
+  templateId      String
+  template        Template @relation(fields: [templateId], references: [id])
+  themeId         String?
+  packageId       String
+  package         Package  @relation(fields: [packageId], references: [id])
+  userId          String?
+  user            User?    @relation(fields: [userId], references: [id])
+  employees       User[]   @relation("AssignedEmployees")
+  guests          Guest[]
+  status          String   @default("pending") // pending, active, completed
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Guest {
+  id              String   @id @default(uuid())
+  name            String
+  phone           String
+  email           String?
+  rsvpStatus      String   @default("pending") // pending, attending, declined
+  checkInStatus   String   @default("pending") // pending, checked_in
+  checkedInAt     DateTime?
+  maxCompanions   Int      @default(1)
+  actualCompanions Int     @default(0)
+  eventId         String
+  event           Event    @relation(fields: [eventId], references: [id])
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Template {
+  id          String   @id @default(uuid())
+  name        String
+  category    String
+  imageUrl    String
+  events      Event[]
+  createdAt   DateTime @default(now())
+}
+
+model Package {
+  id          String   @id @default(uuid())
+  name        String
+  nameAr      String
+  price       Float
+  features    String[]
+  events      Event[]
+  createdAt   DateTime @default(now())
+}
